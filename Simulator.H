@@ -18,7 +18,6 @@ class Simulator {
 public:
   void sim(const Experiment &realData,const int numNulls,
 	   Array1D<Experiment> &nulls);
-  
 private:
   Array1D<int> dnaSums, rnaSums;
   Array1D<GSL::BetaDistribution> betas; // for DNA replicates

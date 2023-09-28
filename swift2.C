@@ -18,6 +18,7 @@
 #include "Swift.H"
 #include "Experiment.H"
 #include "Simulator.H"
+#include "EmpiricalPvalues.H"
 using namespace std;
 using namespace BOOM;
 
@@ -38,7 +39,8 @@ public:
   Application();
   int main(int argc,char *argv[]);
   bool loadInputs(File &,String &variantID);
-  void computePValues(const Array1D<SwiftSample> &realSamples,
+  void computePValues(Swift &,const float lambda,
+		      const Array1D<SwiftSample> &realSamples,
 		      const Experiment &realData,const int numNulls);
   void reportSummary(Array1D<SwiftSample> &samples,const String &id,
 		     float lambda);
@@ -116,7 +118,7 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
     swift.run(data.DNA,data.RNA,numSamples,samples);
 
     // Compute empirical p-values if requested
-    if(wantPValues) computePValues(samples,data,numNulls);
+    if(wantPValues) computePValues(swift,lambda,samples,data,numNulls);
     
     // Report median and 95% CI
     reportSummary(samples,id,lambda);
@@ -331,15 +333,28 @@ void Application::save(const Array1D<SwiftSample> &samples,File &f) const
 
 
 
-void Application::computePValues(const Array1D<SwiftSample> &realSamples,
+void Application::computePValues(Swift &swift,const float lambda,
+				 const Array1D<SwiftSample> &realSamples,
 				 const Experiment &realData,
 				 const int numNulls)
 {
+  // Simulate some nulls
   Array1D<Experiment> nulls(numNulls);
   Simulator simulator;
   simulator.sim(realData,numNulls,nulls);
 
-
+  // Perform posterior inference on nulls using Swift
+  const int numSamples=realSamples.size();
+  Array1D< Array1D<SwiftSample> > nullSamples(numNulls);
+  for(int i=0 ; i<numNulls ; ++i)
+    swift.run(nulls[i].DNA,nulls[i].RNA,numSamples,nullSamples[i]);
+  
+  // Compute empirical p-values
+  EmpiricalPvalues emp;
+  const float p1=emp.median_p(realSamples,nullSamples);
+  const float p2=emp.area_p(realSamples,lambda,nullSamples);
+  cout<<"p(median)="<<p1<<endl;
+  cout<<"p(alt area)="<<p2<<endl;
 }
 
 

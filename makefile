@@ -29,6 +29,7 @@ $(OBJ)/swift2.o:\
 #---------------------------------------------------------
 swift2: \
 		$(OBJ) \
+		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
 		$(OBJ)/Swift.o \
 		$(OBJ)/Simulator.o \
@@ -37,6 +38,7 @@ swift2: \
 		$(OBJ)/SwiftSample.o \
 		$(OBJ)/swift2.o
 	$(CC) $(LDFLAGS) -o swift2 \
+		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
 		$(OBJ)/Swift.o \
 		$(OBJ)/Simulator.o \
@@ -81,4 +83,10 @@ $(OBJ)/Experiment.o:\
 		Experiment.H
 	$(CC) $(CFLAGS) -o $(OBJ)/Experiment.o -c \
 		Experiment.C
+#--------------------------------------------------------
+$(OBJ)/EmpiricalPvalues.o:\
+		EmpiricalPvalues.C\
+		EmpiricalPvalues.H
+	$(CC) $(CFLAGS) -o $(OBJ)/EmpiricalPvalues.o -c \
+		EmpiricalPvalues.C
 #---------------------------------------------------------
