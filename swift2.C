@@ -14,16 +14,17 @@
 #include "BOOM/GSL/Random.H"
 #include "BOOM/Array1DSorter.H"
 #include "BOOM/File.H"
-#include "Replicates.H"
 #include "SwiftSample.H"
 #include "Swift.H"
+#include "Experiment.H"
+#include "Simulator.H"
 using namespace std;
 using namespace BOOM;
 
 const int PSEUDOCOUNT=1;
 
 class Application {
-  Replicates DNA, RNA;
+  Experiment data;
   void readReps(const Vector<String> &fields,int start,Replicates &);
   void skipLines(int num,File &);
   float getMedian(const Array1D<SwiftSample> &samples);
@@ -37,12 +38,10 @@ public:
   Application();
   int main(int argc,char *argv[]);
   bool loadInputs(File &,String &variantID);
-  //void performSampling(int numSamples,float concentration);
+  void computePValues(const Array1D<SwiftSample> &realSamples,
+		      const Experiment &realData,const int numNulls);
   void reportSummary(Array1D<SwiftSample> &samples,const String &id,
 		     float lambda);
-  //void chooseAlphaBeta(float c,const float p,float &alpha,float &beta);
-  //void advanceReps(int &dnaIndex,int &rnaIndex,const int numDnaReps,
-  //		   const int numRnaReps);
 };
 
 
@@ -72,7 +71,7 @@ Application::Application()
 int Application::main(int argc,char *argv[])
 {
   // Process command line
-  CommandLine cmd(argc,argv,"s:c:");
+  CommandLine cmd(argc,argv,"s:c:p:");
   if(cmd.numArgs()!=4)
     throw String("\n\
 swift2 <input.txt> <lambda> <first-last> <#samples>\n\
@@ -82,6 +81,7 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
    optional: -s mcmc.txt = save samples in mcmc.txt\n\
              -c conc = use shrinkage with the given concentration\n\
                        (100 is recommended for concentration, min is 2)\n\
+             -p = compute empirical p-values\n\
 ");
   const String infile=cmd.arg(0);
   const float lambda=cmd.arg(1).asFloat();
@@ -90,6 +90,8 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
   if(lambda<1.0) throw "lambda must be >= 1";
   String sampleFilename=cmd.optParm('s');
   const float concentration=cmd.option('c') ? cmd.optParm('c').asFloat() : 0;
+  const bool wantPValues=cmd.option('p');
+  const int numNulls=wantPValues ? cmd.optParm('p').asInt() : 0;
 
   // Get ready to run on input file
   Regex reg("(\\d+)-(\\d+)");
@@ -105,13 +107,16 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
   Swift swift(concentration);
   Array1D<SwiftSample> samples;
   for(int i=firstVariant ; i<=lastVariant ; ++i) {
-    DNA.clear(); RNA.clear();
+    data.DNA.clear(); data.RNA.clear();
 
     // Load inputs
     if(!loadInputs(f,id)) break;
 
     // Draw samples
-    swift.run(DNA,RNA,numSamples,samples);
+    swift.run(data.DNA,data.RNA,numSamples,samples);
+
+    // Compute empirical p-values if requested
+    if(wantPValues) computePValues(samples,data,numNulls);
     
     // Report median and 95% CI
     reportSummary(samples,id,lambda);
@@ -158,13 +163,11 @@ bool Application::loadInputs(File &f,String &variantID)
   line.getFields(fields);
   if(fields.size()<7) throw line+" : Not enough fields";
   variantID=fields[0];
-  readReps(fields,1,DNA);
+  readReps(fields,1,data.DNA);
   const int numDnaReps=fields[1].asInt();
-  readReps(fields,2+numDnaReps*2,RNA);
-  //DNA.collapse();
-  //RNA.collapse();
-  addPseudocounts(DNA);
-  addPseudocounts(RNA);
+  readReps(fields,2+numDnaReps*2,data.RNA);
+  addPseudocounts(data.DNA);
+  addPseudocounts(data.RNA);
   return true;
 }
 
@@ -324,6 +327,19 @@ void Application::save(const Array1D<SwiftSample> &samples,File &f) const
     if(i+1<n) f.print("\t");
   }
   f.print("\n");
+}
+
+
+
+void Application::computePValues(const Array1D<SwiftSample> &realSamples,
+				 const Experiment &realData,
+				 const int numNulls)
+{
+  Array1D<Experiment> nulls(numNulls);
+  Simulator simulator;
+  simulator.sim(realData,numNulls,nulls);
+
+
 }
 
 
