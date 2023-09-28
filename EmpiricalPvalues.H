@@ -14,14 +14,16 @@ using namespace BOOM;
 
 class EmpiricalPvalues {
 public:
-  float median_p(const Array1D<SwiftSample> &realSamples,
-		 const Array1D< Array1D<SwiftSample> > &nullSamples);
-  float area_p(const Array1D<SwiftSample> &realSamples,
+  float median_p(Array1D<SwiftSample> &realSamples,
+		 Array1D< Array1D<SwiftSample> > &nullSamples);
+  float area_p(Array1D<SwiftSample> &realSamples,
 	       const float lambda, // e.g., 1.2
-	       const Array1D< Array1D<SwiftSample> > &nullSamples);
+	       Array1D< Array1D<SwiftSample> > &nullSamples);
 private:
-  float getMedian(const Array1D<SwiftSample> &);
-  float getArea(const Array1D<SwiftSample> &,const float lambda);
+  bool isSorted(const Array1D<SwiftSample> &);
+  void sort(Array1D<SwiftSample> &);
+  float getMedian(Array1D<SwiftSample> &);
+  float getArea(Array1D<SwiftSample> &,const float lambda);
 };
 
 #endif
