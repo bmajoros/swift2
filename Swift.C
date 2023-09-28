@@ -22,6 +22,7 @@ Swift::Swift(float conc)
 void Swift::run(const Replicates &DNA,const Replicates &RNA,
 		const int numSamples,Array1D<SwiftSample> &samples)
 {
+  if(samples.size()!=numSamples) samples.resize(numSamples);
   const int numDnaReps=DNA.size(), numRnaReps=RNA.size();
   int nextDnaRep=0, nextRnaRep=0;
   for(int i=0 ; i<numSamples ; ++i) {

@@ -12,10 +12,11 @@
 #include "BOOM/Exceptions.H"
 #include "BOOM/GSL/BetaDistribution.H"
 #include "BOOM/GSL/Random.H"
-#include "BOOM/VectorSorter.H"
+#include "BOOM/Array1DSorter.H"
 #include "BOOM/File.H"
 #include "Replicates.H"
 #include "SwiftSample.H"
+#include "Swift.H"
 using namespace std;
 using namespace BOOM;
 
@@ -23,23 +24,25 @@ const int PSEUDOCOUNT=1;
 
 class Application {
   Replicates DNA, RNA;
-  Vector<SwiftSample> samples;
   void readReps(const Vector<String> &fields,int start,Replicates &);
   void skipLines(int num,File &);
-  float getMedian();
-  void getCI(float percent,float &left,float &right);
-  void getP_reg(float lambda,float &leftP,float &rightP,float &P);
+  float getMedian(const Array1D<SwiftSample> &samples);
+  void getCI(const Array1D<SwiftSample> &samples,float percent,float &left,
+	     float &right);
+  void getP_reg(const Array1D<SwiftSample> &samples,float lambda,
+		float &leftP,float &rightP,float &P);
   void addPseudocounts(Replicates &);
-  void save(File &) const;
+  void save(const Array1D<SwiftSample> &samples,File &) const;
 public:
   Application();
   int main(int argc,char *argv[]);
   bool loadInputs(File &,String &variantID);
-  void performSampling(int numSamples,float concentration);
-  void reportSummary(const String &id,float lambda);
-  void chooseAlphaBeta(float c,const float p,float &alpha,float &beta);
-  void advanceReps(int &dnaIndex,int &rnaIndex,const int numDnaReps,
-		   const int numRnaReps);
+  //void performSampling(int numSamples,float concentration);
+  void reportSummary(Array1D<SwiftSample> &samples,const String &id,
+		     float lambda);
+  //void chooseAlphaBeta(float c,const float p,float &alpha,float &beta);
+  //void advanceReps(int &dnaIndex,int &rnaIndex,const int numDnaReps,
+  //		   const int numRnaReps);
 };
 
 
@@ -99,20 +102,22 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
   File *sampleFile=sampleFilename.empty() ? NULL : 
     new File(sampleFilename,"w");
 
+  Swift swift(concentration);
+  Array1D<SwiftSample> samples;
   for(int i=firstVariant ; i<=lastVariant ; ++i) {
-    DNA.clear(); RNA.clear(); samples.clear();
+    DNA.clear(); RNA.clear();
 
     // Load inputs
     if(!loadInputs(f,id)) break;
 
     // Draw samples
-    performSampling(numSamples,concentration);
+    swift.run(DNA,RNA,numSamples,samples);
     
     // Report median and 95% CI
-    reportSummary(id,lambda);
+    reportSummary(samples,id,lambda);
 
     // Save samples if requested
-    if(sampleFile) save(*sampleFile);
+    if(sampleFile) save(samples,*sampleFile);
   }
 
   delete sampleFile;
@@ -165,7 +170,7 @@ bool Application::loadInputs(File &f,String &variantID)
 
 
 
-void Application::performSampling(int numSamples,float conc)
+/*void Application::performSampling(int numSamples,float conc)
 {
   const int numDnaReps=DNA.size(), numRnaReps=RNA.size();
   int nextDnaRep=0, nextRnaRep=0;
@@ -223,10 +228,10 @@ void Application::advanceReps(int &dnaIndex,int &rnaIndex,const int numDnaReps,
     rnaIndex=(rnaIndex+1)%numRnaReps;
   }
 }
+*/
 
 
-
-float Application::getMedian()
+float Application::getMedian(const Array1D<SwiftSample> &samples)
 {
   // PRECONDITION: samples have been sorted by theta
 
@@ -252,7 +257,8 @@ void Application::addPseudocounts(Replicates &reps)
 
 
 
-void Application::getCI(float percent,float &left,float &right)
+void Application::getCI(const Array1D<SwiftSample> &samples,
+			float percent,float &left,float &right)
 {
   // PRECONDITION: samples have been sorted by theta
 
@@ -265,7 +271,8 @@ void Application::getCI(float percent,float &left,float &right)
 
 
 
-void Application::getP_reg(float lambda,float &leftP,float &rightP,float &P)
+void Application::getP_reg(const Array1D<SwiftSample> &samples,
+			   float lambda,float &leftP,float &rightP,float &P)
 {
   const int n=samples.size();
   float invLambda=1.0/lambda;
@@ -282,23 +289,24 @@ void Application::getP_reg(float lambda,float &leftP,float &rightP,float &P)
 
 
 
-void Application::reportSummary(const String &id,float lambda)
+void Application::reportSummary(Array1D<SwiftSample> &samples,
+				const String &id,float lambda)
 {
   // Sort the samples
   SwiftSampleComparator cmp;
-  VectorSorter<SwiftSample> sorter(samples,cmp);
+  Array1DSorter<SwiftSample> sorter(samples,cmp);
   sorter.sortAscendInPlace();
   
   // Get the median
-  const float median=getMedian();
+  const float median=getMedian(samples);
 
   // Get the 95% CI
   float left, right;
-  getCI(0.95,left,right);
+  getCI(samples,0.95,left,right);
 
   // Get p-value-like statistics
   float leftP, rightP, P_reg;
-  getP_reg(lambda,leftP,rightP,P_reg);
+  getP_reg(samples,lambda,leftP,rightP,P_reg);
 
   // Generate output
   cout<<id<<"\t"<<median<<"\t"<<left<<"\t"<<right<<"\t"<<P_reg<<endl;
@@ -306,7 +314,7 @@ void Application::reportSummary(const String &id,float lambda)
 
 
 
-void Application::save(File &f) const
+void Application::save(const Array1D<SwiftSample> &samples,File &f) const
 {
   const int n=samples.size();
   for(int i=0 ; i<n ; ++i) {
