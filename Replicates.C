@@ -48,7 +48,7 @@ void Replicates::clear()
 
 
 
-int Replicates::size()
+int Replicates::size() const
 {
   return reps.size();
 }

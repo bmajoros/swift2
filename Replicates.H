@@ -18,8 +18,9 @@ class Replicates {
 public:
   Replicates();
   void add(const Replicate &);
-  int size();
+  int size() const;
   Replicate &operator[](int i);
+  const Replicate &operator[](int i) const { return reps[i]; }
   void collapse();
   void clear();
 };

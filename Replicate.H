@@ -17,6 +17,7 @@ public:
   Replicate(int ref,int alt);
   int getRef() const;
   int getAlt() const;
+  int getSum() { return ref+alt; }
   void setRef(int r);
   void setAlt(int a);
   void add(const Replicate &);

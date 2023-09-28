@@ -29,11 +29,17 @@ $(OBJ)/swift2.o:\
 #---------------------------------------------------------
 swift2: \
 		$(OBJ) \
+		$(OBJ)/Experiment.o \
+		$(OBJ)/Swift.o \
+		$(OBJ)/Simulator.o \
 		$(OBJ)/Replicate.o \
 		$(OBJ)/Replicates.o \
 		$(OBJ)/SwiftSample.o \
 		$(OBJ)/swift2.o
 	$(CC) $(LDFLAGS) -o swift2 \
+		$(OBJ)/Experiment.o \
+		$(OBJ)/Swift.o \
+		$(OBJ)/Simulator.o \
 		$(OBJ)/Replicate.o \
 		$(OBJ)/Replicates.o \
 		$(OBJ)/SwiftSample.o \
@@ -57,4 +63,22 @@ $(OBJ)/SwiftSample.o:\
 		SwiftSample.H
 	$(CC) $(CFLAGS) -o $(OBJ)/SwiftSample.o -c \
 		SwiftSample.C
+#---------------------------------------------------------
+$(OBJ)/Swift.o:\
+		Swift.C\
+		Swift.H
+	$(CC) $(CFLAGS) -o $(OBJ)/Swift.o -c \
+		Swift.C
+#---------------------------------------------------------
+$(OBJ)/Simulator.o:\
+		Simulator.C\
+		Simulator.H
+	$(CC) $(CFLAGS) -o $(OBJ)/Simulator.o -c \
+		Simulator.C
+#--------------------------------------------------------
+$(OBJ)/Experiment.o:\
+		Experiment.C\
+		Experiment.H
+	$(CC) $(CFLAGS) -o $(OBJ)/Experiment.o -c \
+		Experiment.C
 #---------------------------------------------------------

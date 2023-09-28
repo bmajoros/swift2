@@ -1,6 +1,6 @@
 /****************************************************************
- swift.C
- Copyright (C)2018 William H. Majoros (bmajoros@alumni.duke.edu)
+ swift2.C
+ Copyright (C)2023 William H. Majoros (bmajoros@alumni.duke.edu)
  This is OPEN SOURCE SOFTWARE governed by the Gnu General Public
  License (GPL) version 3, as described at www.opensource.org.
  ****************************************************************/
