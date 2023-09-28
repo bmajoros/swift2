@@ -107,7 +107,6 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
 
     // Draw samples
     performSampling(numSamples,concentration);
-    //cout<<samples.size()<<" samples were drawn"<<endl;
     
     // Report median and 95% CI
     reportSummary(id,lambda);
@@ -168,8 +167,6 @@ bool Application::loadInputs(File &f,String &variantID)
 
 void Application::performSampling(int numSamples,float conc)
 {
-  //const int a=DNA[0].getAlt(), b=DNA[0].getRef();
-  //const int k=RNA[0].getAlt(), m=RNA[0].getRef();
   const int numDnaReps=DNA.size(), numRnaReps=RNA.size();
   int nextDnaRep=0, nextRnaRep=0;
   for(int i=0 ; i<numSamples ; ++i) {
@@ -181,7 +178,6 @@ void Application::performSampling(int numSamples,float conc)
     GSL::BetaDistribution beta1(a+1,b+1); // posterior with uniform prior
     float p;
     do { p=beta1.random(); } while(p==0.0 || p==1.0);
-    //cout<<"a="<<a<<" b="<<b<<" p="<<p;
 
     // Sample q from P(q|p,k,m)
     float alpha, beta;
@@ -189,7 +185,6 @@ void Application::performSampling(int numSamples,float conc)
     GSL::BetaDistribution beta2(k+alpha,m+beta); // posterior
     float q;
     do { q=beta2.random(); } while(q==0.0 || q==1.0);
-    //cout<<" k="<<k<<" m="<<m<<" q="<<q<<endl;
 
     // Create a new sample via (q/(1-q))/(p/(1-p))
     samples.push_back(SwiftSample(p,q));

@@ -6,12 +6,7 @@
  ****************************************************************/
 #include <iostream>
 #include "Experiment.H"
-using namespace std;
-using namespace BOOM;
 
-Experiment::Experiment()
-{
-  // ctor
-}
+
 
 

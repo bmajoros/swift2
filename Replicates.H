@@ -19,7 +19,7 @@ public:
   Replicates();
   void add(const Replicate &);
   int size() const;
-  void resize(int n) { reps.resize(); }
+  void resize(int n) { reps.resize(n); }
   Replicate &operator[](int i);
   const Replicate &operator[](int i) const { return reps[i]; }
   void collapse();

@@ -6,6 +6,8 @@
  ****************************************************************/
 #include <iostream>
 #include "Simulator.H"
+#include "BOOM/Vector.H"
+#include "BOOM/GSL/GslBinomial.H"
 using namespace std;
 using namespace BOOM;
 
@@ -25,7 +27,7 @@ void Simulator::sim(const Experiment &realData,const int numNulls,
   }
 
   // Perform simulation
-  GSL::GslBinomial binom();
+  GSL::GslBinomial binom;
   for(int i=0 ; i<numNulls ; ++i) {
     // First, sample a value for p from the real DNA (using a beta distr)
     // and use it to simulate new DNA allele counts
@@ -35,9 +37,9 @@ void Simulator::sim(const Experiment &realData,const int numNulls,
       const float p=betas[j].random();
       Ps.push_back(p);
       binom.change(p);
-      const n=dnaSums[j];
-      const a=binom.random(n);
-      const b=n-a;
+      const int n=dnaSums[j];
+      const int a=binom.random(n);
+      const int b=n-a;
       Replicate &dnaRep=null.DNA[j];
       dnaRep.setRef(a); dnaRep.setAlt(b);
     }
@@ -48,9 +50,9 @@ void Simulator::sim(const Experiment &realData,const int numNulls,
       const float q=Ps[nextP];
       nextP=(nextP+1)%Ps.size();
       binom.change(q);
-      const n=rnaSums[j];
-      const k=binom.random(n);
-      const m=n-k;
+      const int n=rnaSums[j];
+      const int k=binom.random(n);
+      const int m=n-k;
       Replicate &rnaRep=null.RNA[j];
       rnaRep.setRef(k); rnaRep.setAlt(m);
     }

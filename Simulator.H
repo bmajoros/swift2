@@ -7,7 +7,9 @@
 #ifndef INCL_Simulator_H
 #define INCL_Simulator_H
 #include <iostream>
+#include "Experiment.H"
 #include "BOOM/Array1D.H"
+#include "BOOM/GSL/BetaDistribution.H"
 using namespace std;
 using namespace BOOM;
 

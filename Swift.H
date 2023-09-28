@@ -7,6 +7,9 @@
 #ifndef INCL_Swift_H
 #define INCL_Swift_H
 #include <iostream>
+#include "Replicates.H"
+#include "BOOM/Array1D.H"
+#include "SwiftSample.H"
 using namespace std;
 using namespace BOOM;
 
@@ -14,8 +17,13 @@ using namespace BOOM;
 class Swift {
 public:
   Swift(const float conc);
-  void run(const Replicates &DNA,const Replicates &RNA,
-	   Array1D<float> &samples);
+  void run(const Replicates &DNA,const Replicates &RNA,const int numSamples,
+	   Array1D<SwiftSample> &samples);
+private:
+  float conc;
+  void chooseAlphaBeta(float c,const float p,float &alpha,float &beta);
+  void advanceReps(int &dnaIndex,int &rnaIndex,const int numDnaReps,
+		   const int numRnaReps);
 };
 
 #endif
