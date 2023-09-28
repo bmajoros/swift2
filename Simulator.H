@@ -7,6 +7,7 @@
 #ifndef INCL_Simulator_H
 #define INCL_Simulator_H
 #include <iostream>
+#include "BOOM/Array1D.H"
 using namespace std;
 using namespace BOOM;
 
@@ -17,9 +18,10 @@ public:
 	   Array1D<Experiment> &nulls);
 private:
   Array1D<int> dnaSums, rnaSums;
-  Vector<GSL::BetaDistribution> betas; // for DNA replicates
+  Array1D<GSL::BetaDistribution> betas; // for DNA replicates
   void computeSums(const Experiment &realData);
   void computeSums(const Replicates &data,Array1D<int> &into);
+  void prepareBetas(const Replicates &DNA);
 };
 
 #endif
