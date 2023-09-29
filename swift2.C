@@ -40,10 +40,11 @@ public:
   int main(int argc,char *argv[]);
   bool loadInputs(File &,String &variantID);
   void computePValues(Swift &,const float lambda,
-		      const Array1D<SwiftSample> &realSamples,
-		      const Experiment &realData,const int numNulls);
+		      Array1D<SwiftSample> &realSamples,
+		      const Experiment &realData,const int numNulls,
+		      float &medianP,float &areaP);
   void reportSummary(Array1D<SwiftSample> &samples,const String &id,
-		     float lambda);
+		     float lambda,const float medianP,const float areaP);
 };
 
 
@@ -118,10 +119,12 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
     swift.run(data.DNA,data.RNA,numSamples,samples);
 
     // Compute empirical p-values if requested
-    if(wantPValues) computePValues(swift,lambda,samples,data,numNulls);
+    float medianP, areaP;
+    if(wantPValues)
+      computePValues(swift,lambda,samples,data,numNulls,medianP,areaP);
     
     // Report median and 95% CI
-    reportSummary(samples,id,lambda);
+    reportSummary(samples,id,lambda,medianP,areaP);
 
     // Save samples if requested
     if(sampleFile) save(samples,*sampleFile);
@@ -173,67 +176,6 @@ bool Application::loadInputs(File &f,String &variantID)
   return true;
 }
 
-
-
-/*void Application::performSampling(int numSamples,float conc)
-{
-  const int numDnaReps=DNA.size(), numRnaReps=RNA.size();
-  int nextDnaRep=0, nextRnaRep=0;
-  for(int i=0 ; i<numSamples ; ++i) {
-    // Get counts from current reps
-    const int a=DNA[nextDnaRep].getAlt(), b=DNA[nextDnaRep].getRef();
-    const int k=RNA[nextRnaRep].getAlt(), m=RNA[nextRnaRep].getRef();
-    
-    // Sample p from P(p|a,b)
-    GSL::BetaDistribution beta1(a+1,b+1); // posterior with uniform prior
-    float p;
-    do { p=beta1.random(); } while(p==0.0 || p==1.0);
-
-    // Sample q from P(q|p,k,m)
-    float alpha, beta;
-    chooseAlphaBeta(conc,p,alpha,beta);
-    GSL::BetaDistribution beta2(k+alpha,m+beta); // posterior
-    float q;
-    do { q=beta2.random(); } while(q==0.0 || q==1.0);
-
-    // Create a new sample via (q/(1-q))/(p/(1-p))
-    samples.push_back(SwiftSample(p,q));
-
-    // Advance to next pairing of DNA & RNA replicates
-    advanceReps(nextDnaRep,nextRnaRep,numDnaReps,numRnaReps);
-  }
-}
-
-
-
-void Application::chooseAlphaBeta(float c,const float p,
-				  float &alpha,float &beta)
-{
-  // If c>2, this will use a beta prior with p as the mode.
-  // For c=2, this will result in a uniform prior.
-  if(c<2) c=2;
-
-  // ### ADAPTIVE CONCENTRATION METHOD:
-  //const float c=5.5/p;
-  // ###
-
-  // Compute parameters for a beta prior with mode and concentration
-  alpha=p*(c-2)+1;
-  beta=(1-p)*(c-2)+1;
-}
-
-
-
-void Application::advanceReps(int &dnaIndex,int &rnaIndex,const int numDnaReps,
-			      const int numRnaReps)
-{
-  ++dnaIndex;
-  if(dnaIndex>=numDnaReps) {
-    dnaIndex=0;
-    rnaIndex=(rnaIndex+1)%numRnaReps;
-  }
-}
-*/
 
 
 float Application::getMedian(const Array1D<SwiftSample> &samples)
@@ -295,7 +237,8 @@ void Application::getP_reg(const Array1D<SwiftSample> &samples,
 
 
 void Application::reportSummary(Array1D<SwiftSample> &samples,
-				const String &id,float lambda)
+				const String &id,float lambda,
+				const float medianP,const float areaP)
 {
   // Sort the samples
   SwiftSampleComparator cmp;
@@ -314,7 +257,8 @@ void Application::reportSummary(Array1D<SwiftSample> &samples,
   getP_reg(samples,lambda,leftP,rightP,P_reg);
 
   // Generate output
-  cout<<id<<"\t"<<median<<"\t"<<left<<"\t"<<right<<"\t"<<P_reg<<endl;
+  cout<<id<<"\t"<<median<<"\t"<<left<<"\t"<<right<<"\t"<<P_reg
+      <<"\t"<<medianP<<"\t"<<areaP<<endl;
 }
 
 
@@ -334,9 +278,10 @@ void Application::save(const Array1D<SwiftSample> &samples,File &f) const
 
 
 void Application::computePValues(Swift &swift,const float lambda,
-				 const Array1D<SwiftSample> &realSamples,
+				 Array1D<SwiftSample> &realSamples,
 				 const Experiment &realData,
-				 const int numNulls)
+				 const int numNulls,
+				 float &medianP,float &areaP)
 {
   // Simulate some nulls
   Array1D<Experiment> nulls(numNulls);
@@ -351,10 +296,8 @@ void Application::computePValues(Swift &swift,const float lambda,
   
   // Compute empirical p-values
   EmpiricalPvalues emp;
-  const float p1=emp.median_p(realSamples,nullSamples);
-  const float p2=emp.area_p(realSamples,lambda,nullSamples);
-  cout<<"p(median)="<<p1<<endl;
-  cout<<"p(alt area)="<<p2<<endl;
+  medianP=emp.median_p(realSamples,nullSamples);
+  areaP=emp.area_p(realSamples,lambda,nullSamples);
 }
 
 
