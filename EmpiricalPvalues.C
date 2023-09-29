@@ -66,6 +66,16 @@ float EmpiricalPvalues::area_p(Array1D<SwiftSample> &realSamples,
 
 
 
+void EmpiricalPvalues::getMedians(Array1D< Array1D<SwiftSample> > &samples,
+				  Vector<float> &into)
+{
+  const int n=samples.size();
+  for(int i=0 ; i<n ; ++i)
+    into.push_back(getMedian(samples[i]));
+}
+
+
+
 float EmpiricalPvalues::getMedian(Array1D<SwiftSample> &samples)
 {
   if(!isSorted(samples)) sort(samples);
@@ -84,6 +94,7 @@ float EmpiricalPvalues::getArea(Array1D<SwiftSample> &samples,
 				const float lambda)
 {
   if(!isSorted(samples)) sort(samples);
+  if(lambda<=1.0) throw String("Lambda must be > 1");
   const float invLambda=1.0/lambda;
   float count=0;
   const int numSamples=samples.size();

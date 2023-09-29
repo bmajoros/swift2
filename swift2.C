@@ -5,6 +5,7 @@
  License (GPL) version 3, as described at www.opensource.org.
  ****************************************************************/
 #include <iostream>
+#include <fstream>
 #include "BOOM/String.H"
 #include "BOOM/CommandLine.H"
 #include "BOOM/File.H"
@@ -42,9 +43,11 @@ public:
   void computePValues(Swift &,const float lambda,
 		      Array1D<SwiftSample> &realSamples,
 		      const Experiment &realData,const int numNulls,
-		      float &medianP,float &areaP);
+		      float &medianP,float &areaP,
+		      const String &nullStatFile);
   void reportSummary(Array1D<SwiftSample> &samples,const String &id,
 		     float lambda,const float medianP,const float areaP);
+  void writeNullStats(const Vector<float> &stats,const String &filename);
 };
 
 
@@ -74,7 +77,7 @@ Application::Application()
 int Application::main(int argc,char *argv[])
 {
   // Process command line
-  CommandLine cmd(argc,argv,"s:c:p:");
+  CommandLine cmd(argc,argv,"s:c:p:n:");
   if(cmd.numArgs()!=4)
     throw String("\n\
 swift2 <input.txt> <lambda> <first-last> <#samples>\n\
@@ -85,6 +88,7 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
              -c conc = use shrinkage with the given concentration\n\
                        (100 is recommended for concentration, min is 2)\n\
              -p = compute empirical p-values\n\
+             -n filename = write null stats into file (requires -p)\n\
 ");
   const String infile=cmd.arg(0);
   const float lambda=cmd.arg(1).asFloat();
@@ -95,6 +99,7 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
   const float concentration=cmd.option('c') ? cmd.optParm('c').asFloat() : 0;
   const bool wantPValues=cmd.option('p');
   const int numNulls=wantPValues ? cmd.optParm('p').asInt() : 0;
+  String nullStatFile=cmd.option('n') ? cmd.optParm('n') : "";
 
   // Get ready to run on input file
   Regex reg("(\\d+)-(\\d+)");
@@ -121,7 +126,8 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
     // Compute empirical p-values if requested
     float medianP=-1, areaP=-1;
     if(wantPValues)
-      computePValues(swift,lambda,samples,data,numNulls,medianP,areaP);
+      computePValues(swift,lambda,samples,data,numNulls,medianP,areaP,
+		     nullStatFile);
     
     // Report median and 95% CI
     reportSummary(samples,id,lambda,medianP,areaP);
@@ -282,7 +288,8 @@ void Application::computePValues(Swift &swift,const float lambda,
 				 Array1D<SwiftSample> &realSamples,
 				 const Experiment &realData,
 				 const int numNulls,
-				 float &medianP,float &areaP)
+				 float &medianP,float &areaP,
+				 const String &nullStatFile)
 {
   // Simulate some nulls
   Array1D<Experiment> nulls(numNulls);
@@ -300,6 +307,13 @@ void Application::computePValues(Swift &swift,const float lambda,
   medianP=emp.median_p(realSamples,nullSamples);
   areaP=emp.area_p(realSamples,lambda,nullSamples);
 
+  // Write null stats into file if requested
+  if(nullStatFile.length()>0) {
+    Vector<float> medians;
+    emp.getMedians(nullSamples,medians);
+    writeNullStats(medians,nullStatFile);
+  }
+  
   // Debugging
   return;
   for(int i=0 ; i<10 ; ++i) {
@@ -315,6 +329,18 @@ void Application::computePValues(Swift &swift,const float lambda,
     cout<<"]"<<endl;
   }
 }
+
+
+
+void Application::writeNullStats(const Vector<float> &stats,
+				 const String &filename)
+{
+  ofstream os(filename.c_str());
+  for(Vector<float>::const_iterator cur=stats.begin(), end=stats.end() ;
+      cur!=end ; ++cur)
+    os<<(*cur)<<endl;
+}
+
 
 
 

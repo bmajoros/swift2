@@ -19,6 +19,7 @@ public:
   float area_p(Array1D<SwiftSample> &realSamples,
 	       const float lambda, // e.g., 1.2
 	       Array1D< Array1D<SwiftSample> > &nullSamples);
+  void getMedians(Array1D< Array1D<SwiftSample> > &,Vector<float> &into);
 private:
   bool isSorted(const Array1D<SwiftSample> &);
   void sort(Array1D<SwiftSample> &);
