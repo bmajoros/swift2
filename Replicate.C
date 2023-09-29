@@ -66,5 +66,19 @@ void Replicate::addPseudocount(int pseudo)
 
 
 
+void Replicate::printOn(ostream &os) const
+{
+  os<<"("<<ref<<","<<alt<<")";
+}
+
+
+
+ostream &operator<<(ostream &os,const Replicate &r)
+{
+  r.printOn(os);
+  return os;
+}
+
+
 
 

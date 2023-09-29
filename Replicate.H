@@ -22,7 +22,10 @@ public:
   void setAlt(int a);
   void add(const Replicate &);
   void addPseudocount(int);
+  void printOn(ostream &) const;
 };
+
+ostream &operator<<(ostream &,const Replicate &);
 
 #endif
 

@@ -55,3 +55,19 @@ int Replicates::size() const
 
 
 
+void Replicates::printOn(ostream &os) const
+{
+  const int n=reps.size();
+  for(int i=0 ; i<n ; ++i) {
+    os<<reps[i];
+    if(i+1<n) os<<"\t";
+  }
+}
+
+
+
+ostream &operator<<(ostream &os,const Replicates &r)
+{
+  r.printOn(os);
+  return os;
+}

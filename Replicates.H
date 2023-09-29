@@ -24,7 +24,10 @@ public:
   const Replicate &operator[](int i) const { return reps[i]; }
   void collapse();
   void clear();
+  void printOn(ostream &) const;
 };
+
+ostream &operator<<(ostream &,const Replicates &);
 
 #endif
 

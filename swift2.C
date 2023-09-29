@@ -22,7 +22,7 @@
 using namespace std;
 using namespace BOOM;
 
-const int PSEUDOCOUNT=1;
+const int PSEUDOCOUNT=0;
 
 class Application {
   Experiment data;
@@ -119,7 +119,7 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
     swift.run(data.DNA,data.RNA,numSamples,samples);
 
     // Compute empirical p-values if requested
-    float medianP, areaP;
+    float medianP=-1, areaP=-1;
     if(wantPValues)
       computePValues(swift,lambda,samples,data,numNulls,medianP,areaP);
     
@@ -257,8 +257,9 @@ void Application::reportSummary(Array1D<SwiftSample> &samples,
   getP_reg(samples,lambda,leftP,rightP,P_reg);
 
   // Generate output
-  cout<<id<<"\t"<<median<<"\t"<<left<<"\t"<<right<<"\t"<<P_reg
-      <<"\t"<<medianP<<"\t"<<areaP<<endl;
+  cout<<id<<"\t"<<median<<"\t"<<left<<"\t"<<right<<"\t"<<P_reg;
+  if(medianP>=0 && areaP>=0) cout<<"\t"<<medianP<<"\t"<<areaP<<endl;
+  else cout<<endl;
 }
 
 
@@ -298,6 +299,21 @@ void Application::computePValues(Swift &swift,const float lambda,
   EmpiricalPvalues emp;
   medianP=emp.median_p(realSamples,nullSamples);
   areaP=emp.area_p(realSamples,lambda,nullSamples);
+
+  // Debugging
+  return;
+  for(int i=0 ; i<10 ; ++i) {
+    cout<<nulls[i].DNA<<"\t"<<nulls[i].RNA<<"\t";//<<nullSamples[i]<<endl;
+    Array1D<SwiftSample> &samples=nullSamples[i];
+    cout<<"[";
+    const int n=samples.size();
+    for(int j=0 ; j<n ; ++j) {
+      const SwiftSample &sample=samples[j];
+      cout<<sample.getTheta();
+      if(j+1<n) cout<<",";
+    }
+    cout<<"]"<<endl;
+  }
 }
 
 
