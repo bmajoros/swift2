@@ -29,6 +29,7 @@ $(OBJ)/swift2.o:\
 #---------------------------------------------------------
 swift2: \
 		$(OBJ) \
+		$(OBJ)/InverseCDF.o \
 		$(OBJ)/GridMap.o \
 		$(OBJ)/PosteriorEstimator.o \
 		$(OBJ)/DensityGrid.o \
@@ -44,6 +45,7 @@ swift2: \
 		$(OBJ)/SwiftSample.o \
 		$(OBJ)/swift2.o
 	$(CC) $(LDFLAGS) -o swift2 \
+		$(OBJ)/InverseCDF.o \
 		$(OBJ)/GridMap.o \
 		$(OBJ)/PosteriorEstimator.o \
 		$(OBJ)/DensityGrid.o \
@@ -137,4 +139,10 @@ $(OBJ)/GridMap.o:\
 		GridMap.H
 	$(CC) $(CFLAGS) -o $(OBJ)/GridMap.o -c \
 		GridMap.C
+#---------------------------------------------------------
+$(OBJ)/InverseCDF.o:\
+		InverseCDF.C\
+		InverseCDF.H
+	$(CC) $(CFLAGS) -o $(OBJ)/InverseCDF.o -c \
+		InverseCDF.C
 #---------------------------------------------------------

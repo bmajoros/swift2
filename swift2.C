@@ -20,6 +20,7 @@
 #include "Experiment.H"
 #include "Simulator.H"
 #include "EmpiricalPvalues.H"
+#include "InverseCDF.H"
 using namespace std;
 using namespace BOOM;
 
@@ -36,6 +37,12 @@ class Application {
 		float &leftP,float &rightP,float &P);
   void addPseudocounts(Replicates &);
   void save(const Array1D<SwiftSample> &samples,File &) const;
+  InverseCDF *createSampler(const Replicates &DNAorRNA,
+			    const float conc,
+			    const int numPointsInGrid);
+  void performSampling(const float conc,float &lambda,
+		       const int numPointsInGrid,const int numSamples,
+		       Array1D<float> &samples);
 public:
   Application();
   int main(int argc,char *argv[]);
@@ -342,5 +349,34 @@ void Application::writeNullStats(const Vector<float> &stats,
 }
 
 
+
+InverseCDF *Application::createSampler(const Replicates &DNAorRNA,
+				       const float conc,
+				       const int numPointsInGrid)
+{
+  DensityFunction f(DNAorRNA,conc);
+  DensityGrid grid(numPointsInGrid);
+  grid.fill(f);
+  Trapezoids trapezoids(grid);
+  GridMap gridMap(grid.size());
+  return new InverseCDF(trapezoids,gridMap);
+}
+
+
+
+void Application::performSampling(const float conc,float &lambda,
+				  const int numPointsInGrid,
+				  const int numSamples,
+				  Array1D<float> &samples)
+{
+  if(samples.size()!=numSamples) samples.resize(numSamples);
+  InverseCDF *pSampler=createSampler(data.DNA,conc,numPointsInGrid);
+  InverseCDF *qSampler=createSampler(data.RNA,conc,numPointsInGrid);
+  for(int i=0 ; i<numSamples ; ++i) {
+    const float p=pSampler->sample(), q=qSampler->sample();
+    samples[i]=q/(1-q)/(p/(1-p));
+  }
+  delete pSampler; delete qSampler;
+}
 
 
