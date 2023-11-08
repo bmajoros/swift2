@@ -25,6 +25,8 @@ using namespace std;
 using namespace BOOM;
 
 const int PSEUDOCOUNT=0;
+const float CONCENTRATION=200; // ### Make this a parameter
+const int GRID_POINTS=1000; // ### Make this a parameter
 
 class Application {
   Experiment data;
@@ -40,9 +42,9 @@ class Application {
   InverseCDF *createSampler(const Replicates &DNAorRNA,
 			    const float conc,
 			    const int numPointsInGrid);
-  void performSampling(const float conc,float &lambda,
-		       const int numPointsInGrid,const int numSamples,
-		       Array1D<float> &samples);
+  void performSampling(const Replicates &DNA,const Replicates &RNA,
+		       const float conc,const int numPointsInGrid,
+		       const int numSamples,Array1D<SwiftSample> &samples);
 public:
   Application();
   int main(int argc,char *argv[]);
@@ -128,7 +130,9 @@ swift2 <input.txt> <lambda> <first-last> <#samples>\n\
     if(!loadInputs(f,id)) break;
 
     // Draw samples
-    swift.run(data.DNA,data.RNA,numSamples,samples);
+    //swift.run(data.DNA,data.RNA,numSamples,samples);
+    performSampling(data.DNA,data.RNA,CONCENTRATION,GRID_POINTS,numSamples,
+		    samples);
 
     // Compute empirical p-values if requested
     float medianP=-1, areaP=-1;
@@ -307,8 +311,10 @@ void Application::computePValues(Swift &swift,const float lambda,
   const int numSamples=realSamples.size();
   Array1D< Array1D<SwiftSample> > nullSamples(numNulls);
   for(int i=0 ; i<numNulls ; ++i)
-    swift.run(nulls[i].DNA,nulls[i].RNA,numSamples,nullSamples[i]);
-  
+    //swift.run(nulls[i].DNA,nulls[i].RNA,numSamples,nullSamples[i]);
+    performSampling(nulls[i].DNA,nulls[i].RNA,CONCENTRATION,GRID_POINTS,
+		    numSamples,nullSamples[i]);
+
   // Compute empirical p-values
   EmpiricalPvalues emp;
   medianP=emp.median_p(realSamples,nullSamples);
@@ -364,17 +370,19 @@ InverseCDF *Application::createSampler(const Replicates &DNAorRNA,
 
 
 
-void Application::performSampling(const float conc,float &lambda,
+void Application::performSampling(const Replicates &DNA,
+				  const Replicates &RNA,
+				  const float conc,
 				  const int numPointsInGrid,
 				  const int numSamples,
-				  Array1D<float> &samples)
+				  Array1D<SwiftSample> &samples)
 {
   if(samples.size()!=numSamples) samples.resize(numSamples);
-  InverseCDF *pSampler=createSampler(data.DNA,conc,numPointsInGrid);
-  InverseCDF *qSampler=createSampler(data.RNA,conc,numPointsInGrid);
+  InverseCDF *pSampler=createSampler(DNA,conc,numPointsInGrid);
+  InverseCDF *qSampler=createSampler(RNA,conc,numPointsInGrid);
   for(int i=0 ; i<numSamples ; ++i) {
     const float p=pSampler->sample(), q=qSampler->sample();
-    samples[i]=q/(1-q)/(p/(1-p));
+    samples[i]=SwiftSample(p,q);
   }
   delete pSampler; delete qSampler;
 }
