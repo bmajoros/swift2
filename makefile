@@ -29,6 +29,11 @@ $(OBJ)/swift2.o:\
 #---------------------------------------------------------
 swift2: \
 		$(OBJ) \
+		$(OBJ)/GridMap.o \
+		$(OBJ)/PosteriorEstimator.o \
+		$(OBJ)/DensityGrid.o \
+		$(OBJ)/Trapezoids.o \
+		$(OBJ)/PrefixSumArray.o \
 		$(OBJ)/DensityFunction.o \
 		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
@@ -39,6 +44,11 @@ swift2: \
 		$(OBJ)/SwiftSample.o \
 		$(OBJ)/swift2.o
 	$(CC) $(LDFLAGS) -o swift2 \
+		$(OBJ)/GridMap.o \
+		$(OBJ)/PosteriorEstimator.o \
+		$(OBJ)/DensityGrid.o \
+		$(OBJ)/Trapezoids.o \
+		$(OBJ)/PrefixSumArray.o \
 		$(OBJ)/DensityFunction.o \
 		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
@@ -97,4 +107,34 @@ $(OBJ)/DensityFunction.o:\
 		DensityFunction.H
 	$(CC) $(CFLAGS) -o $(OBJ)/DensityFunction.o -c \
 		DensityFunction.C
+#---------------------------------------------------------
+$(OBJ)/DensityGrid.o:\
+		DensityGrid.C\
+		DensityGrid.H
+	$(CC) $(CFLAGS) -o $(OBJ)/DensityGrid.o -c \
+		DensityGrid.C
+#--------------------------------------------------------
+$(OBJ)/Trapezoids.o:\
+		Trapezoids.C\
+		Trapezoids.H
+	$(CC) $(CFLAGS) -o $(OBJ)/Trapezoids.o -c \
+		Trapezoids.C
+#--------------------------------------------------------
+$(OBJ)/PrefixSumArray.o:\
+		PrefixSumArray.C\
+		PrefixSumArray.H
+	$(CC) $(CFLAGS) -o $(OBJ)/PrefixSumArray.o -c \
+		PrefixSumArray.C
+#--------------------------------------------------------
+$(OBJ)/PosteriorEstimator.o:\
+		PosteriorEstimator.C\
+		PosteriorEstimator.H
+	$(CC) $(CFLAGS) -o $(OBJ)/PosteriorEstimator.o -c \
+		PosteriorEstimator.C
+#---------------------------------------------------------
+$(OBJ)/GridMap.o:\
+		GridMap.C\
+		GridMap.H
+	$(CC) $(CFLAGS) -o $(OBJ)/GridMap.o -c \
+		GridMap.C
 #---------------------------------------------------------
