@@ -29,6 +29,7 @@ $(OBJ)/swift2.o:\
 #---------------------------------------------------------
 swift2: \
 		$(OBJ) \
+		$(OBJ)/DensityFunction.o \
 		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
 		$(OBJ)/Swift.o \
@@ -38,6 +39,7 @@ swift2: \
 		$(OBJ)/SwiftSample.o \
 		$(OBJ)/swift2.o
 	$(CC) $(LDFLAGS) -o swift2 \
+		$(OBJ)/DensityFunction.o \
 		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
 		$(OBJ)/Swift.o \
@@ -89,4 +91,10 @@ $(OBJ)/EmpiricalPvalues.o:\
 		EmpiricalPvalues.H
 	$(CC) $(CFLAGS) -o $(OBJ)/EmpiricalPvalues.o -c \
 		EmpiricalPvalues.C
+#---------------------------------------------------------
+$(OBJ)/DensityFunction.o:\
+		DensityFunction.C\
+		DensityFunction.H
+	$(CC) $(CFLAGS) -o $(OBJ)/DensityFunction.o -c \
+		DensityFunction.C
 #---------------------------------------------------------
