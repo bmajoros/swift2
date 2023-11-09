@@ -10,6 +10,8 @@
 using namespace std;
 using namespace BOOM;
 
+const float PSEUDOCOUNT=1.0;
+
 
 bool EmpiricalPvalues::isSorted(const Array1D<SwiftSample> &samples)
 {
@@ -43,7 +45,7 @@ float EmpiricalPvalues::median_p(Array1D<SwiftSample> &realSamples,
     const float median=getMedian(nullSamples[i]);
     if(median<=left || median>=right) ++count;
   }
-  const float p=float(count)/float(numNulls);
+  const float p=float(count+PSEUDOCOUNT)/float(numNulls+PSEUDOCOUNT);
   return p;
 }
 
@@ -60,7 +62,7 @@ float EmpiricalPvalues::area_p(Array1D<SwiftSample> &realSamples,
     const float area=getArea(nullSamples[i],lambda);
     if(area>=realArea) ++count;
   }
-  const float p=float(count)/float(numNulls);
+  const float p=float(count+PSEUDOCOUNT)/float(numNulls+PSEUDOCOUNT);
   return p;
 }
 
