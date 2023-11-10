@@ -56,7 +56,8 @@ public:
 		      const String &nullStatFile);
   void reportSummary(Array1D<SwiftSample> &samples,const String &id,
 		     float lambda,const float medianP,const float areaP);
-  void writeNullStats(const Vector<float> &stats,const String &filename);
+  void writeNullStats(const Vector<float> &stats,const Array1D<Experiment> &,
+		      const String &filename);
 };
 
 
@@ -324,7 +325,7 @@ void Application::computePValues(Swift &swift,const float lambda,
   if(nullStatFile.length()>0) {
     Vector<float> medians;
     emp.getMedians(nullSamples,medians);
-    writeNullStats(medians,nullStatFile);
+    writeNullStats(medians,nulls,nullStatFile);
   }
   
   // Debugging
@@ -346,12 +347,20 @@ void Application::computePValues(Swift &swift,const float lambda,
 
 
 void Application::writeNullStats(const Vector<float> &stats,
+				 const Array1D<Experiment> &nulls,
 				 const String &filename)
 {
   ofstream os(filename.c_str());
-  for(Vector<float>::const_iterator cur=stats.begin(), end=stats.end() ;
+  /*for(Vector<float>::const_iterator cur=stats.begin(), end=stats.end() ;
       cur!=end ; ++cur)
-    os<<(*cur)<<endl;
+      os<<(*cur)<<endl;*/
+  const int n=nulls.size();
+  for(int i=0 ; i<n ; ++i) {
+    const Experiment &exper=nulls[i];
+    const Replicates &DNA=exper.DNA, &RNA=exper.RNA;
+    os<<stats[i]<<"\t"<<DNA.size()<<"\t"<<DNA<<"\t"
+      <<RNA.size()<<"\t"<<RNA<<endl;
+  }
 }
 
 

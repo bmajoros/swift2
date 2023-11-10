@@ -10,7 +10,7 @@
 using namespace std;
 using namespace BOOM;
 
-const float PSEUDOCOUNT=1.0;
+const float PSEUDOCOUNT=0.0; // 1.0;
 
 
 bool EmpiricalPvalues::isSorted(const Array1D<SwiftSample> &samples)
