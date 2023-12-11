@@ -19,10 +19,14 @@ from statsmodels.stats import multitest
 #=========================================================================
 # main()
 #=========================================================================
-if(len(sys.argv)!=2):
-    exit(ProgramName.get()+" <swift2.out>\n")
-(infile,)=sys.argv[1:]
+if(len(sys.argv)!=6):
+    exit(ProgramName.get()+" <swift2.out> <#nulls> <#alts> <alpha> <out:q-values.txt>\n")
+(infile,numNulls,numAlts,alpha,outFile)=sys.argv[1:]
+numNulls=int(numNulls)
+numAlts=int(numAlts)
+alpha=float(alpha)
 
+# Read p-values from file
 pvalues=[]
 IN=open(infile,"rt")
 for line in IN:
@@ -30,15 +34,35 @@ for line in IN:
     if(len(fields)!=7): continue
     (id,theta,Palt,CI_left,CI_right,median_p,area_p)=fields
     pvalues.append(float(median_p))
+    #pvalues.append(float(area_p))
 IN.close()
 
-out=statsmodels.stats.multitest.fdrcorrection(pvalues,alpha=0.05,
-                                               method='indep',
-                                               is_sorted=False)
-q=out[1]
-for x in q:
-    print(x)
-    
+# Do FDR correction to produce q-values
+#out=statsmodels.stats.multitest.fdrcorrection(pvalues,alpha=0.05,
+#                                               method='indep',
+#                                               is_sorted=False)
+out=statsmodels.stats.multitest.multipletests(pvalues, alpha=0.5,
+                                              method='fdr_bh',
+                                              #method="bonferroni",
+                                              maxiter=1,
+                                              is_sorted=False,
+                                              returnsorted=False)
+qValues=out[1]
+numValues=len(qValues)
+if(numValues!=numNulls+numAlts):
+    raise Exception("#values does not equal #nulls + #alts")
+with open(outFile,"wt") as OUT:
+    for x in qValues: print(x,file=OUT)
 
-
-
+# Compute FDR and power
+#qValues=[float(x) for x in q]
+qNulls=qValues[:numNulls]
+qAlts=qValues[numNulls:]
+FP=0; TP=0
+for q in qNulls:
+    if(q<=alpha): FP+=1
+for q in qAlts:
+    if(q<=alpha): TP+=1
+FDR=float(FP)/float(FP+TP)
+power=float(TP)/numAlts
+print("FDR =",FDR,", power =",power)

@@ -28,13 +28,14 @@ void Simulator::sim(const Experiment &realData,const int numNulls,
 
   // Perform simulation
   GSL::GslBinomial binom;
+  GSL::BetaDistribution beta;
   for(int i=0 ; i<numNulls ; ++i) {
     // First, sample a value for p from the real DNA (using a beta distr)
     // and use it to simulate new DNA allele counts
     Experiment &null=nulls[i];
     Vector<float> Ps;
     for(int j=0 ; j<numDnaReps ; ++j) {
-      const float p=betas[j].random();
+      const float p=/*0.5;*/betas[j].random(); // ### DEBUGGING: p=0.5
       Ps.push_back(p);
       binom.change(p);
       const int n=dnaSums[j];
@@ -47,7 +48,17 @@ void Simulator::sim(const Experiment &realData,const int numNulls,
     // Assuming q=p, simulate RNA counts from a binomial
     int nextP=0;
     for(int j=0 ; j<numRnaReps ; ++j) {
-      const float q=Ps[nextP];
+      //const float q=Ps[nextP];
+
+      // ### EXPERIMENTAL:
+      const float mode=Ps[nextP];
+      const float conc=139;
+      const float ALPHA=mode*(conc-2)+1;
+      const float BETA=(1-mode)*(conc-2)+1;
+      beta.change(ALPHA,BETA);
+      const float q=beta.random();
+      // ###
+      
       nextP=(nextP+1)%Ps.size();
       binom.change(q);
       const int n=rnaSums[j];
