@@ -21,6 +21,7 @@
 #include "Simulator.H"
 #include "EmpiricalPvalues.H"
 #include "InverseCDF.H"
+#include "DensityWithPrior.H"
 using namespace std;
 using namespace BOOM;
 
@@ -39,9 +40,10 @@ class Application {
 		float &leftP,float &rightP,float &P);
   void addPseudocounts(Replicates &);
   void save(const Array1D<SwiftSample> &samples,File &) const;
-  InverseCDF *createSampler(const Replicates &DNAorRNA,
-			    const float conc,
+  InverseCDF *createSampler(const Replicates &DNAorRNA,const float conc,
 			    const int numPointsInGrid);
+  InverseCDF *samplerWithPrior(const Replicates &DNAorRNA,const float conc,
+			       const int numPointsInGrid,const float p);
   void performSampling(const Replicates &DNA,const Replicates &RNA,
 		       const float conc,const int numPointsInGrid,
 		       const int numSamples,Array1D<SwiftSample> &samples);
@@ -379,6 +381,21 @@ InverseCDF *Application::createSampler(const Replicates &DNAorRNA,
 
 
 
+InverseCDF *Application::samplerWithPrior(const Replicates &DNAorRNA,
+					  const float conc,
+					  const int numPointsInGrid,
+					  const float p)
+{
+  DensityWithPrior f(DNAorRNA,conc,p);
+  DensityGrid grid(numPointsInGrid);
+  grid.fill(f);
+  Trapezoids trapezoids(grid);
+  GridMap gridMap(grid.size());
+  return new InverseCDF(trapezoids,gridMap);
+}
+
+
+
 void Application::performSampling(const Replicates &DNA,
 				  const Replicates &RNA,
 				  const float conc,
@@ -388,12 +405,16 @@ void Application::performSampling(const Replicates &DNA,
 {
   if(samples.size()!=numSamples) samples.resize(numSamples);
   InverseCDF *pSampler=createSampler(DNA,conc,numPointsInGrid);
-  InverseCDF *qSampler=createSampler(RNA,conc,numPointsInGrid);
+  //InverseCDF *qSampler=createSampler(RNA,conc,numPointsInGrid);
   for(int i=0 ; i<numSamples ; ++i) {
-    const float p=pSampler->sample(), q=qSampler->sample();
+    const float p=pSampler->sample();
+    InverseCDF *qSampler=samplerWithPrior(RNA,conc,numPointsInGrid,p);
+    const float q=qSampler->sample();
+    delete qSampler;
     samples[i]=SwiftSample(p,q);
   }
-  delete pSampler; delete qSampler;
+  delete pSampler;
+  //delete qSampler;
 }
 
 

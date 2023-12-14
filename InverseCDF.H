@@ -21,7 +21,7 @@ public:
   virtual ~InverseCDF();
   float sample();
 private:
-  const GridMap &map;
+  const GridMap map;
   gsl_ran_discrete_t *gsl_table;
   void computeTable(const Trapezoids &);
 };

@@ -1,26 +1,26 @@
 /****************************************************************
- DensityFunction.H
+ DensityWithPrior.H
  Copyright (C)2023 William H. Majoros (bmajoros@alumni.duke.edu).
  This is OPEN SOURCE SOFTWARE governed by the Gnu General Public
  License (GPL) version 3, as described at www.opensource.org.
  ****************************************************************/
-#ifndef INCL_DensityFunction_H
-#define INCL_DensityFunction_H
+#ifndef INCL_DensityWithPrior_H
+#define INCL_DensityWithPrior_H
 #include <iostream>
-#include <gsl/gsl_sf_gamma.h>
-#include "Replicates.H"
+#include "DensityFunction.H"
 using namespace std;
 using namespace BOOM;
 
-
-class DensityFunction {
+// This is a version of the DensityFunction that includes a shrinage
+// prior.  Given sample allele frequency in DNA (p), this shrinks the
+// allele frequency in RNA (q) toward p.
+class DensityWithPrior : public DensityFunction {
 public:
-  DensityFunction(const Replicates &,const float concentration);
+  DensityWithPrior(const Replicates &,const float repConc,const float p);
   virtual double operator()(float q) const; // Not in log space!
+  void changeP(const float p) { this->p=p; }
 protected:
-  const float c; // concentration parm for between-replicate variation
-  const Replicates &data;
-  inline double lg(double x) { return gsl_sf_lngamma(x); }
+  float p;
 };
 
 #endif

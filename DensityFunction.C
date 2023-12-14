@@ -12,10 +12,10 @@ using namespace std;
 using namespace BOOM;
 
 
-inline double lg(double x)
+/*inline double lg(double x)
 {
   return gsl_sf_lngamma(x);
-}
+  }*/
 
 
 

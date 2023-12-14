@@ -35,6 +35,7 @@ swift2: \
 		$(OBJ)/DensityGrid.o \
 		$(OBJ)/Trapezoids.o \
 		$(OBJ)/PrefixSumArray.o \
+		$(OBJ)/DensityWithPrior.o \
 		$(OBJ)/DensityFunction.o \
 		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
@@ -51,6 +52,7 @@ swift2: \
 		$(OBJ)/DensityGrid.o \
 		$(OBJ)/Trapezoids.o \
 		$(OBJ)/PrefixSumArray.o \
+		$(OBJ)/DensityWithPrior.o \
 		$(OBJ)/DensityFunction.o \
 		$(OBJ)/EmpiricalPvalues.o \
 		$(OBJ)/Experiment.o \
@@ -145,4 +147,12 @@ $(OBJ)/InverseCDF.o:\
 		InverseCDF.H
 	$(CC) $(CFLAGS) -o $(OBJ)/InverseCDF.o -c \
 		InverseCDF.C
+#---------------------------------------------------------
+
+#--------------------------------------------------------
+$(OBJ)/DensityWithPrior.o:\
+		DensityWithPrior.C\
+		DensityWithPrior.H
+	$(CC) $(CFLAGS) -o $(OBJ)/DensityWithPrior.o -c \
+		DensityWithPrior.C
 #---------------------------------------------------------

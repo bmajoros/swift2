@@ -60,9 +60,11 @@ qNulls=qValues[:numNulls]
 qAlts=qValues[numNulls:]
 FP=0; TP=0
 for q in qNulls:
-    if(q<=alpha): FP+=1
+    if(q<=alpha):
+        FP+=1
+        #print("Another FP:",q,"<=",alpha)
 for q in qAlts:
     if(q<=alpha): TP+=1
 FDR=float(FP)/float(FP+TP)
 power=float(TP)/numAlts
-print("FDR =",FDR,", power =",power)
+print("FDR =",FDR,", power =",power,", #predictions=",FP+TP)
