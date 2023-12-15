@@ -67,4 +67,4 @@ for q in qAlts:
     if(q<=alpha): TP+=1
 FDR=float(FP)/float(FP+TP)
 power=float(TP)/numAlts
-print("FDR =",FDR,", power =",power,", #predictions=",FP+TP)
+print("FDR =",FDR,", power =",power,", FP=",FP,", TP=",TP)
