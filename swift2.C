@@ -405,16 +405,16 @@ void Application::performSampling(const Replicates &DNA,
 {
   if(samples.size()!=numSamples) samples.resize(numSamples);
   InverseCDF *pSampler=createSampler(DNA,conc,numPointsInGrid);
-  //InverseCDF *qSampler=createSampler(RNA,conc,numPointsInGrid);
+  InverseCDF *qSampler=createSampler(RNA,conc,numPointsInGrid);
   for(int i=0 ; i<numSamples ; ++i) {
     const float p=pSampler->sample();
-    InverseCDF *qSampler=samplerWithPrior(RNA,conc,numPointsInGrid,p);
+    //InverseCDF *qSampler=samplerWithPrior(RNA,conc,numPointsInGrid,p);
     const float q=qSampler->sample();
-    delete qSampler;
+    //delete qSampler;
     samples[i]=SwiftSample(p,q);
   }
   delete pSampler;
-  //delete qSampler;
+  delete qSampler;
 }
 
 

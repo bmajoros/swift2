@@ -11,6 +11,7 @@ from builtins import (bytes, dict, int, list, object, range, str, ascii,
 # The above imports should allow this program to run in both Python 2 and
 # Python 3.  You might need to update your version of module "future".
 import sys
+import math
 import ProgramName
 import statsmodels
 from statsmodels import stats
@@ -67,4 +68,13 @@ for q in qAlts:
     if(q<=alpha): TP+=1
 FDR=float(FP)/float(FP+TP)
 power=float(TP)/numAlts
-print("FDR =",FDR,", power =",power,", FP=",FP,", TP=",TP)
+
+# Compute binomial confidence interval for estimate of FDR
+n=TP+FP
+lower=FDR-1.96*math.sqrt(FDR*(1-FDR)/n)
+upper=FDR+1.96*math.sqrt(FDR*(1-FDR)/n)
+digits=3
+print("FDR=",round(FDR,digits),", 95% CI=(",round(lower,digits),",",
+      round(upper,digits),"), power=",round(power,digits),
+      ", FP=",FP,", TP=",TP,sep="")
+
